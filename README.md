@@ -12,15 +12,15 @@ activate smnls
 ## Execution
 For training:
 ```
-python train.py <model_type> <model_name> <checkpoint_path> <train_data_path>
+python src/train.py <model_type> <model_name> <checkpoint_path> <train_data_path>
 ```
 
 For evaluation:
 ```
-python eval.py <checkpoint_path> <eval_data_path>
+python src/eval.py <checkpoint_path> <eval_data_path>
 ```
 
 For inference:
 ```
-python infer.py <checkpoint_path> <input_file> <output_file>
+python src/infer.py <checkpoint_path> <input_file> <output_file>
 ```
