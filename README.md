@@ -6,7 +6,7 @@ This repository holds the assignment description, relevant papers, code and outp
 git clone https://github.com/sgraaf/practical_1_learning_sentence_representations/
 cd practical_1_learning_sentence_representations
 conda create -f environment.yml
-activate smnls
+conda activate smnls
 ```
 
 ## Execution
