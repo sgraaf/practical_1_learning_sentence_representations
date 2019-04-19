@@ -27,22 +27,15 @@ def snli(percentage=None):
     return train, dev, test
 
 
-def tokenize(datasets):
+def tokenize(sentence):
     """
-    Returns the set of tokens present in the union of the datasets
+    Returns the list of tokens present in the sentence
 
-    :param tuple datasets: the datasets
-    :returns: the set of tokens
-    :rtype: set
+    :param string sentence: the sentence
+    :returns: the tokens of the sentence
+    :rtype: list
     """
-    tokens = set()
-
-    for dataset in datasets:
-        for item in dataset:
-            for text_type in ['premise', 'hypothesis']:
-                tokens.update([token.lower() for token in word_tokenize(item[text_type])])
-
-    return tokens
+    return [token.lower() for token in word_tokenize(sentence)]
 
 
 def glove():
