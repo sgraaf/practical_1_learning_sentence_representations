@@ -17,7 +17,7 @@ class Baseline(nn.Module):
         :param int embedding_dim: the dimensionality of the word embeddings
         """
         super(Baseline).__init__()
-        self.embedding_dim = embedding_dim
+        self.output_dim = self.embedding_dim = embedding_dim
 
     def forward(self, batch, batch_lens):
         """
@@ -40,8 +40,7 @@ class LSTM(nn.Module):
         """
         super(LSTM).__init__()
         self.embedding_dim = embedding_dim
-        self.hidden_dim = hidden_dim
-        self.output_dim = hidden_dim
+        self.output_dim = self.hidden_dim = hidden_dim
         self.cell = nn.LSTM(input_size=self.embedding_dim, hidden_size=self.hidden_dim)
 
     def forward(self, batch, batch_lens):
