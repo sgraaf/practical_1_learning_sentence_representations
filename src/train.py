@@ -1,5 +1,6 @@
 # imports
 import argparse
+from os.path import getctime
 from pathlib import Path
 from time import time
 
@@ -12,8 +13,9 @@ from torchtext.data import BucketIterator
 from data import load_data
 from encoders import LSTM, Baseline, BiLSTM, MaxBiLSTM
 from model import InferSent
-from utils import (batch_accuracy, create_checkpoint, print_flags,
-                   print_model_parameters, save_model, save_results)
+from utils import (batch_accuracy, create_checkpoint, load_checkpoint,
+                   print_flags, print_model_parameters, save_model,
+                   save_results)
 
 # defaults
 FLAGS = None
@@ -99,16 +101,30 @@ def train():
         weight_decay=weight_decay
     )
 
-    # initialize the results containers
-    results = {
-        'train_accucary': [],
-        'train_loss': [],
-        'dev_accuracy': [],
-        'dev_loss': []
-    }
-    best_accuracy = 0.0
+    # load the last checkpoint (if it exists)
+    checkpoints = list(checkpoint_path.glob(f'{model.__class__.__name__}_{encoder.__class__.__name__}_*.pt'))
+    if len(checkpoints) > 0:
+        # load the latest checkpoint
+        checkpoints.sort(key=getctime)
+        latest_checkpoint_path = checkpoints[-1]
+        epoch, results, best_accuracy = load_checkpoint(latest_checkpoint_path, model, optimizer)
+    else:
+         # initialize the epoch, results and best_accuracy
+        epoch = 0
+        results = {
+            'train_accucary': [],
+            'train_loss': [],
+            'dev_accuracy': [],
+            'dev_loss': []
+        }
+        best_accuracy = 0.0
 
-    for i in range(max_epochs):
+    if epoch == 0:
+        print(f'Starting training at epoch {epoch + 1}...')
+    else:
+        print(f'Resuming training from epoch {epoch + 1}...')
+
+    for i in range(epoch, max_epochs):
         print(f'Epoch {i+1:0{len(str(max_epochs))}}/{max_epochs}:')
 
         epoch_results = {
@@ -125,6 +141,9 @@ def train():
             device=DEVICE, 
             shuffle=True
         )
+
+        # put the model in train mode
+        model.train()
 
         # iterate over the train data mini-batches for training
         for batch in train_iter:
