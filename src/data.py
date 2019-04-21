@@ -22,9 +22,9 @@ def get_SNLI(text_field, label_field, percentage=None):
     train, dev, test = SNLI.splits(text_field, label_field)
 
     if percentage:
-        train = train[:np.int(np.ceil(len(train) * percentage))]
-        dev = dev[:np.int(np.ceil(len(dev) * percentage))]
-        test = test[:np.int(np.ceil(len(test) * percentage))]
+        train.examples = train.examples[:np.int(np.ceil(len(train) * percentage))]
+        dev.examples = dev.examples[:np.int(np.ceil(len(dev) * percentage))]
+        test.examples = test.examples[:np.int(np.ceil(len(test) * percentage))]
 
     return train, dev, test
 
@@ -47,10 +47,11 @@ def get_GloVe():
     return GloVe_vectors
 
 
-def load_data():
+def load_data(percentage=None):
     """
     Load all relevant data (GloVe vectors & SNLI dataset) for our experiments
 
+    :param float percentage: the percentage of the data to use
     :returns: the data (train, dev, test, text_field and label_field)
     :rtype: tuple(Dataset, Dataset, Dataset, Field, Field)
     """
