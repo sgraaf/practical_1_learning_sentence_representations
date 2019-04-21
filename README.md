@@ -7,6 +7,9 @@ git clone https://github.com/sgraaf/practical_1_learning_sentence_representation
 cd practical_1_learning_sentence_representations
 conda create -f environment.yml
 conda activate smnls
+python
+>>> import nltk
+>>> nltk.download('punkt')
 ```
 
 ## Execution
