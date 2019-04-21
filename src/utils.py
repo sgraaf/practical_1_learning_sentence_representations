@@ -1,4 +1,5 @@
 import torch
+from pandas import DataFrame as df
 
 def pack_padded_sequence_batch(batch, batch_lens):
     """
@@ -84,3 +85,83 @@ def print_flags(FLAGS):
   """
   for key, value in FLAGS.items():
     print(f'{key} : {value}')
+
+
+def print_model_parameters(model):
+    """
+    Prints all model parameters and their values.
+
+    :param nn.Module model: the model
+    """
+    # print(f'Model: {model.__class__.__name__}')
+    print('Parameters:')
+    named_parameters = model.named_parameters()
+    longest_param_name = max([len(named_param[0]) for named_param in named_parameters])
+    for name, param in named_parameters:
+        print(f' {name:<{longest_param_name}} {param}')
+
+
+def batch_accuracy(batch_y, pred_y):
+    """
+    Computes the accuracy of the predicted labels
+
+    :param torch.tensor batch_y: the true labels
+    :param torch.tensor pred_y: the one-hot encoded predicted labels
+    """
+    return (batch_y == pred_y.argmax(dim=1)).float().mean().item()
+
+
+def create_checkpoint(checkpoint_path, epoch, model, optimizer, results, best_accuracy):
+    """
+    Creates a checkpoint for the current epoch
+
+    :param pathlib.Path checkpoint_path: the path of the directory to store the checkpoints in
+    :param int epoch: the current epoch
+    :param nn.Module model: the model
+    :param optim.Optimizer optimizer: the optimizer
+    :param dict results: the results
+    :param float best_accuracy: the best accuracy thus far
+    """
+    print('Creating checkpoint...', end=' ')
+    checkpoint_name = checkpoint_path / (f'{model.__class__.__name__}_{model.encoder.__class__.__name__}_{epoch}_checkpoint.pt')
+    torch.save(
+        {
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'results': results,
+            'best_accuracy': best_accuracy
+        },
+        checkpoint_name
+    )
+    print('Done!')
+
+
+def save_model(model_dir, model):
+    """
+    Saves the model
+
+    :param pathlib.Path model_dir: the path of the directory to save the models in
+    :param nn.Module model: the model
+    """
+    print('Saving the model...', end=' ')
+    model_name = model_dir / f'{model.__class__.__name__}_{model.encoder.__class__.__name__}_model.pt'
+    encoder_name = model_dir / f'{model.__class__.__name__}_{model.encoder.__class__.__name__}_encoder.pt'
+    torch.save(model.state_dict(), model_name)
+    torch.save(model.encoder.state_dict(), encoder_name)
+    print('Done!')
+
+
+def save_results(results_dir, results, model):
+    """
+    Saves the results
+
+    :param pathlib.Path results_dir: the path of the directory to save the results in
+    :param dict results: the results
+    :param nn.Module model: the model
+    """
+    print('Saving the results...', end=' ')
+    results_df = df.from_dict(results)
+    results_name = results_dir / f'{model.__class__.__name__}_{model.encoder.__class__.__name__}_results.csv'
+    results_df.to_csv(results_name, sep=';', encoding='utf-8')
+    print('Done!')
