@@ -112,7 +112,7 @@ class MaxBiLSTM(nn.Module):
         :param int embedding_dim: the dimensionality of the word embeddings
         :param int hidden_dim: the dimensionality of the hidden state
         """
-        super(BiLSTM).__init__()
+        super(MaxBiLSTM).__init__()
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
         self.output_dim = 2 * hidden_dim
