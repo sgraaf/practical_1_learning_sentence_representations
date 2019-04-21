@@ -15,14 +15,12 @@ class InferSent(nn.Module):
         :param int input_dim: the dimensionality of the input
         :param int hidden_dim: the dimensionality of the hidden states
         :param int output_dim: the dimensionality of the output
-        :param nn.Embedding embedding: the embeddings
         :param Encoder encoder: the encoder to use
         """
         super(InferSent).__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim
-        self.embedding = embedding
         self.encoder = encoder
 
         self.model = nn.Sequential(
