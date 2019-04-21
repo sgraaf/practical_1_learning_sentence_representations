@@ -179,7 +179,7 @@ def train():
 
             # forward pass
             pred_y = model.forward(batch_premises, batch_hypotheses)
-            dev_loss = criterion(pred_y, y_batch)
+            dev_loss = criterion(pred_y, batch_y)
 
             # compute and record the results
             epoch_results['dev_accuracy'].append(batch_accuracy(batch_y, pred_y))
