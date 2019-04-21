@@ -19,26 +19,26 @@ from utils import (batch_accuracy, create_checkpoint, print_flags,
 FLAGS = None
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 ROOT_DIR = Path.cwd().parent
+DIV_LEARNING_RATE = 5
+MIN_LEARNING_RATE = 1e-5
 
 MODEL_TYPE_DEFAULT = 'Baseline'
 CHECKPOINT_PATH_DEFAULT = ROOT_DIR / 'output' / 'checkpoints'
-TRAIN_DATA_PATH_DEFAULT = ROOT_DIR / 'output' / 'results'
+MODELS_PATH_DEFAULT = ROOT_DIR / 'output' / 'models'
+RESULTS_PATH_DEFAULT = ROOT_DIR / 'output' / 'results'
 PERCENTAGE_DEFAULT = 0.05
 LEARNING_RATE_DEFAULT = 0.1
 WEIGHT_DECAY_DEFAULT = 0.99
 BATCH_SIZE_DEFAULT = 64
 MAX_EPOCHS_DEFAULT = 20
 
-MODELS_DIR = ROOT_DIR / 'output' / 'models'
-DIV_LEARNING_RATE = 5
-MIN_LEARNING_RATE = 1e-5
-
 
 def train():
     # get the flags
     model_type = FLAGS.model_type
     checkpoint_path = Path(FLAGS.checkpoint_path)
-    train_data_path = Path(FLAGS.train_data_path)
+    models_path = Path(FLAGS.models_path)
+    results_path = Path(FLAGS.results_path)
     percentage = FLAGS.percentage
     learning_rate = FLAGS.learning_rate
     weight_decay = FLAGS.weight_decay
@@ -47,9 +47,11 @@ def train():
 
     # create non-existing directories
     if not checkpoint_path.exists():
-        checkpoint_path.mkdir(parents=True, exist_ok=True)
-    if not train_data_path.exists():
-        train_data_path.mkdir(parents=True, exist_ok=True)
+        checkpoint_path.mkdir(parents=True)
+    if not models_path.exists():
+        models_path.mkdir(parents=True)
+    if not results_path.exists():
+        results_path.mkdir(parents=True)
 
     # load the data
     print('Loading the data...', end=' ')
@@ -132,7 +134,7 @@ def train():
 
             # forward pass
             pred_y = model.forward(batch_premises, batch_hypotheses)
-            train_loss = criterion(pred_y, y_batch)
+            train_loss = criterion(pred_y, batch_y)
 
             # (re)set the optimizer gradient to 0
             optimizer.zero_grad()
@@ -181,7 +183,7 @@ def train():
                 group['lr'] = learning_rate
         else:
             best_accuracy = results['dev_accuracy'][-1]
-            save_model(model)
+            save_model(models_path, model)
 
         # terminate training if the learning rate becomes too low
         if learning_rate < MIN_LEARNING_RATE:
@@ -189,7 +191,7 @@ def train():
             break
     
     # save the results
-    save_results(results)
+    save_results(results_path, results, model)
 
 
 def main():
@@ -216,9 +218,11 @@ if __name__ == '__main__':
     parser.add_argument('--model_type', type=str, default='a',
                         help='Model type (i.e: Baseline, LSTM, BiLSTM or MaxBiLSTM)')
     parser.add_argument('--checkpoint_path', type=str, default=CHECKPOINT_PATH_DEFAULT,
-                        help='Path of directory to store training checkpoints')
-    parser.add_argument('--train_data_path', type=str, default=TRAIN_DATA_PATH_DEFAULT,
-                        help='Path of directory to store training results')
+                        help='Path of directory to store checkpoints')
+    parser.add_argument('--models_path', type=str, default=MODELS_PATH_DEFAULT,
+                        help='Path of directory to store models')
+    parser.add_argument('--results_path', type=str, default=RESULTS_PATH_DEFAULT,
+                        help='Path of directory to store results')
     parser.add_argument('--percentage', type=float, default=PERCENTAGE_DEFAULT,
                         help='Percentage of data to be used (for training, testing, etc.)')
     parser.add_argument('--learning_rate', type=float, default=LEARNING_RATE_DEFAULT,
