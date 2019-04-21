@@ -144,7 +144,7 @@ class BiLSTM(nn.Module):
 
     def forward(self, batch, batch_lens):
         """
-        Forward pass of the batch through the LSTM encoder
+        Forward pass of the batch through the BiLSTM encoder
         """
         # pack the padded sequence
         packed_sequence, batch_lens_sorted, idxs_unsort = pack_padded_sequence_batch(batch, batch_lens)
@@ -181,7 +181,7 @@ class MaxBiLSTM(nn.Module):
 
     def forward(self, batch, batch_lens):
         """
-        Forward pass of the batch through the LSTM encoder
+        Forward pass of the batch through the MaxBiLSTM encoder
         """
         # pack the padded sequence
         packed_sequence, batch_lens_sorted, idxs_unsort = pack_padded_sequence_batch(batch, batch_lens)
