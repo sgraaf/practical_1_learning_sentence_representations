@@ -74,3 +74,13 @@ def get_features(u_batch, v_batch):
     :rtype: torch.tensor
     """
     return torch.cat((u_batch, v_batch, torch.abs(u_batch - v_batch), u_batch * v_batch), dim=1)
+
+
+def print_flags(FLAGS):
+  """
+  Prints all entries in FLAGS Namespace.
+
+  :param Namespace FLAGS: the FLAGS Namespace
+  """
+  for key, value in FLAGS.items():
+    print(f'{key} : {value}')
