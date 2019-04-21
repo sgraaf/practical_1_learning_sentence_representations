@@ -13,17 +13,29 @@ python
 ```
 
 ## Execution
-For training:
+### Training
 ```
-python src/train.py <model_type> <model_name> <checkpoint_path> <train_data_path>
+python src/train.py [OPTIONS]
+```
+#### OPTIONS
+```
+--model_type MODEL_TYPE   Model type (i.e: Baseline, LSTM, BiLSTM or MaxBiLSTM)
+--checkpoint_path PATH    Path of directory to store checkpoints
+--models_path PATH        Path of directory to store models
+--results_path PATH       Path of directory to store results
+--percentage FLOAT        Percentage of data to be used (for training, evaluating, testing, etc.)
+--learning_rate FLOAT     Learning rate
+--weight_decay FLOAT      Weight decay of the learning rate
+--batch_size INT          Batch size
+--max_epochs INT          Max number of epochs for training
 ```
 
-For evaluation:
+### Evaluation
 ```
 python src/eval.py <checkpoint_path> <eval_data_path>
 ```
 
-For inference:
+### Inference:
 ```
 python src/infer.py <checkpoint_path> <input_file> <output_file>
 ```
