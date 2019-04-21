@@ -215,7 +215,7 @@ def main():
 if __name__ == '__main__':
     # cli arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_type', type=str, default='a',
+    parser.add_argument('--model_type', type=str, default=MODEL_TYPE_DEFAULT,
                         help='Model type (i.e: Baseline, LSTM, BiLSTM or MaxBiLSTM)')
     parser.add_argument('--checkpoint_path', type=str, default=CHECKPOINT_PATH_DEFAULT,
                         help='Path of directory to store checkpoints')
