@@ -111,11 +111,11 @@ def batch_accuracy(batch_y, pred_y):
     return (batch_y == pred_y.argmax(dim=1)).float().mean().item()
 
 
-def create_checkpoint(checkpoint_path, epoch, model, optimizer, results, best_accuracy):
+def create_checkpoint(checkpoint_dir, epoch, model, optimizer, results, best_accuracy):
     """
     Creates a checkpoint for the current epoch
 
-    :param pathlib.Path checkpoint_path: the path of the directory to store the checkpoints in
+    :param pathlib.Path checkpoint_dir: the path of the directory to store the checkpoints in
     :param int epoch: the current epoch
     :param nn.Module model: the model
     :param optim.Optimizer optimizer: the optimizer
@@ -123,7 +123,7 @@ def create_checkpoint(checkpoint_path, epoch, model, optimizer, results, best_ac
     :param float best_accuracy: the best accuracy thus far
     """
     print('Creating checkpoint...', end=' ')
-    checkpoint_name = checkpoint_path / (f'{model.__class__.__name__}_{model.encoder.__class__.__name__}_{epoch}_checkpoint.pt')
+    checkpoint_path = checkpoint_dir / (f'{model.__class__.__name__}_{model.encoder.__class__.__name__}_{epoch}_checkpoint.pt')
     torch.save(
         {
             'epoch': epoch,
@@ -132,7 +132,7 @@ def create_checkpoint(checkpoint_path, epoch, model, optimizer, results, best_ac
             'results': results,
             'best_accuracy': best_accuracy
         },
-        checkpoint_name
+        checkpoint_path
     )
     print('Done!')
 
@@ -145,10 +145,10 @@ def save_model(model_dir, model):
     :param nn.Module model: the model
     """
     print('Saving the model...', end=' ')
-    model_name = model_dir / f'{model.__class__.__name__}_{model.encoder.__class__.__name__}_model.pt'
-    encoder_name = model_dir / f'{model.__class__.__name__}_{model.encoder.__class__.__name__}_encoder.pt'
-    torch.save(model.state_dict(), model_name)
-    torch.save(model.encoder.state_dict(), encoder_name)
+    model_path = model_dir / f'{model.__class__.__name__}_{model.encoder.__class__.__name__}_model.pt'
+    encoder_path = model_dir / f'{model.__class__.__name__}_{model.encoder.__class__.__name__}_encoder.pt'
+    torch.save(model.state_dict(), model_path)
+    torch.save(model.encoder.state_dict(), encoder_path)
     print('Done!')
 
 
@@ -162,6 +162,52 @@ def save_results(results_dir, results, model):
     """
     print('Saving the results...', end=' ')
     results_df = df.from_dict(results)
-    results_name = results_dir / f'{model.__class__.__name__}_{model.encoder.__class__.__name__}_results.csv'
-    results_df.to_csv(results_name, sep=';', encoding='utf-8')
+    results_path = results_dir / f'{model.__class__.__name__}_{model.encoder.__class__.__name__}_results.csv'
+    results_df.to_csv(results_path, sep=';', encoding='utf-8')
+    print('Done!')
+
+
+def load_checkpoint(checkpoint_path, model, optimizer):
+    """
+    Loads a checkpoint
+
+    :param pathlib.Path checkpoint_path: the path of the checkpoint
+    :param nn.Module model: the model
+    :param optim.Optimizer optimizer: the optimizer
+    :returns: tuple of epoch, model, optimizer, results and best_accuracy of the checkpoint
+    :rtype: tuple(int, nn.Module, optim.Optimizer, dict, float)
+    """
+    print('Loading checkpoint...', end=' ')
+    checkpoint = torch.load(checkpoint_path)
+    epoch = checkpoint['epoch'] + 1
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    results = checkpoint['results']
+    best_accuracy = checkpoint['best_accuracy']
+    print('Done!')
+
+    return epoch, results, best_accuracy
+
+
+def load_model_state(model_path, model):
+    """
+    Loads a model
+
+    :param pathlib.Path model_path: the path of the model
+    :param nn.Module model: the model
+    """
+    print('Loading the model state...', end=' ')
+    model.load_state_dict(torch.load(model_path))
+    print('Done!')
+
+
+def load_encoder_state(encoder_path, encoder):
+    """
+    Loads an encoder
+
+    :param pathlib.Path encoder_path: the path of the encoder
+    :param nn.Module encoder: the encoder
+    """
+    print('Loading the encoder state...', end=' ')
+    encoder.load_state_dict(torch.load(encoder_path))
     print('Done!')
