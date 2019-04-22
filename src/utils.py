@@ -1,5 +1,12 @@
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import torch
 from pandas import DataFrame as df
+from pandas import read_csv
+
+plt.style.use('seaborn-white')
+
 
 def pack_padded_sequence_batch(batch, batch_lens):
     """
@@ -229,3 +236,35 @@ def save_eval_results(results_dir, results, encoder, tasks):
     results_path = results_dir / f'{encoder.__class__.__name__}_{",".join(tasks)}_eval_results.csv'
     results_df.to_csv(results_path, sep=';', encoding='utf-8')
     print('Done!')
+
+
+def plot_training_results(results_dir):
+    results_files = sorted(results_dir.glob('*.csv'))
+    if len(results_files) == 0:
+        raise ValueError('No results found in the results directory')
+
+    for results_file in results_files:
+        # load the results
+        df = read_csv(results_file, sep=';')
+        x = df['Unnamed: 0'] + 1
+        fig, ax1 = plt.subplots()
+        ax1.plot(x, df['dev_accuracy'], color='tab:orange', marker='o', label='Dev accuracy')
+        ax1.plot(x, df['train_accuracy'], color='tab:red', marker='o', label='Train accuracy')
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Accuracy')
+        ax1.tick_params('y')
+        ax1.set_ylim([0, 1])
+
+        ax2 = ax1.twinx()
+        ax2.plot(x, df['dev_loss'], color='tab:blue', marker='o', label='Dev loss')
+        ax2.plot(x, df['train_loss'], color='tab:green', marker='o', label='Train loss')
+        ax2.set_ylabel('Loss')
+        ax2.tick_params('y')
+        # ax2.set_ylim([0, 5])
+
+        h1, l1 = ax1.get_legend_handles_labels()
+        h2, l2 = ax2.get_legend_handles_labels()
+        ax1.legend(h1+h2, l1+l2, loc=0)
+        plt.tight_layout()
+        plt.savefig(results_file.parent / (results_file.stem + '_accuracy_loss_curves.png'))
+        plt.show()
