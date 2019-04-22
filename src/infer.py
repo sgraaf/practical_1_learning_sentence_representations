@@ -56,8 +56,7 @@ def infer():
     if len(models) > 0:
         load_model_state(models[0], model)
     else:
-        raise ValueError(
-            f'No models with the {encoder_type} encoder exist in the models directory!')
+        raise ValueError(f'No models with the {encoder_type} encoder exist in the models directory!')
     print('Done!')
     print(f'Succesfully loaded the {model.__class__.__name__} model!')
 
@@ -82,14 +81,15 @@ def infer():
             hypothesis = word_tokenize(premise_hypothesis['hypothesis'])
 
             # get their indices
-            premise = torch.tensor([text_field.vocab.stoi[token] for token in premise])
-            hypothesis = torch.tensor([text_field.vocab.stoi[token] for token in hypothesis])
+            premise = torch.tensor([text_field.vocab.stoi[token] for token in premise]).to(DEVICE)
+            hypothesis = torch.tensor([text_field.vocab.stoi[token] for token in hypothesis]).to(DEVICE)
 
             # predict entailment
             y_pred = model.forward(
-                (premise.expand(1, -1).transpose(0, 1), len(premise)),
-                (hypothesis.expand(1, -1).transpose(0, 1), len(hypothesis))
+                (premise.expand(1, -1).transpose(0, 1), torch.tensor(len(premise)).to(DEVICE)),
+                (hypothesis.expand(1, -1).transpose(0, 1), torch.tensor(len(hypothesis)).to(DEVICE))
             )
+
 
             # determine the type of inference
             if y_pred.argmax().item() == 0:
@@ -101,7 +101,7 @@ def infer():
             else:
                 infer = 'error!'
 
-            f.write(f'{premise_hypothesis['premise']};{premise_hypothesis['hypothesis']};{infer}\n')
+            f.write(f"{premise_hypothesis['premise']};{premise_hypothesis['hypothesis']};{infer}\n")
 
 
 def main():
