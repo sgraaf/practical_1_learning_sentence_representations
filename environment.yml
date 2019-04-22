@@ -4,6 +4,7 @@ channels:
   - defaults
 dependencies:
   - cudatoolkit
+  - jupyter
   - matplotlib
   - nltk
   - numpy

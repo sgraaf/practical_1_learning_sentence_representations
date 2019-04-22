@@ -4,7 +4,7 @@ This repository holds the assignment description, relevant papers, code and outp
 ## Installation
 ```
 git clone https://github.com/sgraaf/practical_1_learning_sentence_representations/
-cd practical_1_learning_sentence_representations
+cd practical_1_learning_sentence_representations/src
 conda create -f environment.yml
 conda activate smnls
 python
@@ -15,7 +15,7 @@ python
 ## Execution
 ### Training
 ```
-python src/train.py [OPTIONS]
+python train.py [OPTIONS]
 ```
 #### OPTIONS
 ```
@@ -32,10 +32,22 @@ python src/train.py [OPTIONS]
 
 ### Evaluation
 ```
-python src/eval.py <checkpoint_path> <eval_data_path>
+python eval.py [OPTIONS]
+```
+#### OPTIONS
+```
+--encoder_type ENCODER_TYPE   Encoder type (i.e: Baseline, LSTM, BiLSTM or MaxBiLSTM)
+--encoders_path PATH          Path of directory where the encoders are stored
+--results_path PATH           Path of directory to store results
+--tasks STR[, STR...]         The SentEval tasks to evaluate the model on (i.e. MR, QR, SUBJ, etc.)')
 ```
 
 ### Inference:
 ```
-python src/infer.py <checkpoint_path> <input_file> <output_file>
+python infer.py INPUT_FILE [OPTIONS]
+```
+#### OPTIONS
+```
+--encoder_type ENCODER_TYPE   Encoder type (i.e: Baseline, LSTM, BiLSTM or MaxBiLSTM)
+--models_path PATH            Path of directory where the moodels are stored
 ```
