@@ -15,7 +15,7 @@ from encoders import LSTM, Baseline, BiLSTM, MaxBiLSTM
 from model import InferSent
 from utils import (batch_accuracy, create_checkpoint, load_checkpoint,
                    print_flags, print_model_parameters, save_model,
-                   save_results)
+                   save_training_results)
 
 # defaults
 FLAGS = None
@@ -24,7 +24,7 @@ ROOT_DIR = Path.cwd().parent
 DIV_LEARNING_RATE = 5
 MIN_LEARNING_RATE = 1e-5
 
-MODEL_TYPE_DEFAULT = 'Baseline'
+ENCODER_TYPE_DEFAULT = 'Baseline'
 CHECKPOINT_PATH_DEFAULT = ROOT_DIR / 'output' / 'checkpoints'
 MODELS_PATH_DEFAULT = ROOT_DIR / 'output' / 'models'
 RESULTS_PATH_DEFAULT = ROOT_DIR / 'output' / 'results'
@@ -36,8 +36,7 @@ MAX_EPOCHS_DEFAULT = 20
 
 
 def train():
-    # get the flags
-    model_type = FLAGS.model_type
+    encoder_type = FLAGS.encoder_type
     checkpoint_path = Path(FLAGS.checkpoint_path)
     models_path = Path(FLAGS.models_path)
     results_path = Path(FLAGS.results_path)
@@ -69,14 +68,14 @@ def train():
 
     # set the encoder
     print('Initializing the encoder...', end=' ')
-    if model_type == 'Baseline':
-        encoder = Baseline().to(DEVICE)
-    elif model_type == 'LSTM':
-        encoder = LSTM().to(DEVICE)
-    elif model_type == 'BiLSTM':
-        encoder = BiLSTM().to(DEVICE)
-    elif model_type == 'MaxBiLSTM':
-        encoder = MaxBiLSTM().to(DEVICE)
+    if encoder_type == 'Baseline':
+        encoder = Baseline()
+    elif encoder_type == 'LSTM':
+        encoder = LSTM()
+    elif encoder_type == 'BiLSTM':
+        encoder = BiLSTM()
+    elif encoder_type == 'MaxBiLSTM':
+        encoder = MaxBiLSTM()
     print('Done!')
     print(f'Succesfully initialized the {encoder.__class__.__name__} encoder!')
 
@@ -88,7 +87,8 @@ def train():
         output_dim=3,
         embedding=embedding,
         encoder=encoder
-    ).to(DEVICE)
+    )
+    model.to(DEVICE)
     print('Done!')
     print(f'Succesfully initialized the {model.__class__.__name__} model!')
     print_model_parameters(model)
@@ -96,7 +96,7 @@ def train():
     # set the criterion and optimizer
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(
-        params=model.params(),
+        params=model.parameters(),
         lr=learning_rate,
         weight_decay=weight_decay
     )
@@ -112,7 +112,7 @@ def train():
          # initialize the epoch, results and best_accuracy
         epoch = 0
         results = {
-            'train_accucary': [],
+            'train_accuracy': [],
             'train_loss': [],
             'dev_accuracy': [],
             'dev_loss': []
@@ -123,12 +123,15 @@ def train():
         print(f'Starting training at epoch {epoch + 1}...')
     else:
         print(f'Resuming training from epoch {epoch + 1}...')
+    
+    # put the model in train mode
+    model.train()
 
     for i in range(epoch, max_epochs):
         print(f'Epoch {i+1:0{len(str(max_epochs))}}/{max_epochs}:')
 
         epoch_results = {
-            'train_accucary': [],
+            'train_accuracy': [],
             'train_loss': [],
             'dev_accuracy': [],
             'dev_loss': []
@@ -141,9 +144,6 @@ def train():
             device=DEVICE, 
             shuffle=True
         )
-
-        # put the model in train mode
-        model.train()
 
         # iterate over the train data mini-batches for training
         for batch in train_iter:
@@ -158,18 +158,28 @@ def train():
             # (re)set the optimizer gradient to 0
             optimizer.zero_grad()
 
-            # backward pass
-            train_loss.backward()
-            optimizer.step()
+            try:
+                # backward pass
+                train_loss.backward()
+                optimizer.step()
 
-            # compute and record the results
-            epoch_results['train_accuracy'].append(batch_accuracy(batch_y, pred_y))
-            epoch_results['train_loss'].append(train_loss.item())
+                # compute and record the results
+                epoch_results['train_accuracy'].append(batch_accuracy(batch_y, pred_y))
+                epoch_results['train_loss'].append(train_loss.item())
+            except RuntimeError:  # happens at the last batch for some odd reason
+                # print(f'batch_premises: {batch_premises}')
+                # print(f'batch_hypotheses: {batch_hypotheses}')
+                # print(f'batch_y: {batch_y}')
+                # print(f'batch_y.shape: {batch_y.shape}')
+                # print(f'pred_y.shape: {pred_y.shape}')
+                # print(f'pred_y: {pred_y}')
+                # print(f'train loss: {train_loss}')
+                pass
 
         # compute and record the training results means for this epoch
         results['train_accuracy'].append(np.mean(epoch_results['train_accuracy']))
         results['train_loss'].append(np.mean(epoch_results['train_loss']))
-        print(f" TRAIN accuracy: {results['train_accuracy'][-1]}, loss: {results['train_loss'][-1]}")
+        print(f" TRAIN accuracy: {results['train_accuracy'][-1]:0.10f}, loss: {results['train_loss'][-1]:0.10f}")
 
         # iterate over the dev data mini-batches for evaluation
         for batch in dev_iter:
@@ -188,7 +198,7 @@ def train():
         # compute and record the evaluation results means for this epoch
         results['dev_accuracy'].append(np.mean(epoch_results['dev_accuracy']))
         results['dev_loss'].append(np.mean(epoch_results['dev_loss']))
-        print(f" DEV accuracy: {results['dev_accuracy'][-1]}, loss: {results['dev_loss'][-1]}")
+        print(f" DEV   accuracy: {results['dev_accuracy'][-1]:0.10f}, loss: {results['dev_loss'][-1]:0.10f}")
 
         # create a checkpoint
         create_checkpoint(checkpoint_path, i, model, optimizer, results, best_accuracy)
@@ -210,7 +220,7 @@ def train():
             break
     
     # save the results
-    save_results(results_path, results, model)
+    save_training_results(results_path, results, model)
 
 
 def main():
@@ -234,8 +244,8 @@ def main():
 if __name__ == '__main__':
     # cli arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_type', type=str, default=MODEL_TYPE_DEFAULT,
-                        help='Model type (i.e: Baseline, LSTM, BiLSTM or MaxBiLSTM)')
+    parser.add_argument('--encoder_type', type=str, default=ENCODER_TYPE_DEFAULT,
+                        help='Encoder type (i.e: Baseline, LSTM, BiLSTM or MaxBiLSTM)')
     parser.add_argument('--checkpoint_path', type=str, default=CHECKPOINT_PATH_DEFAULT,
                         help='Path of directory to store checkpoints')
     parser.add_argument('--models_path', type=str, default=MODELS_PATH_DEFAULT,
