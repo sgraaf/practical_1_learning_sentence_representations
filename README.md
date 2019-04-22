@@ -20,7 +20,7 @@ python src/train.py [OPTIONS]
 #### OPTIONS
 ```
 --encoder_type ENCODER_TYPE   Encoder type (i.e: Baseline, LSTM, BiLSTM or MaxBiLSTM)
---checkpoint_path PATH        Path of directory to store checkpoints
+--checkpoint_path PATH        Path of directory to store (and load) checkpoints
 --models_path PATH            Path of directory to store models
 --results_path PATH           Path of directory to store results
 --percentage FLOAT            Percentage of data to be used (for training, evaluating, testing, etc.)
