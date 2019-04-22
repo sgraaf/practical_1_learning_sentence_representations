@@ -4,6 +4,7 @@ __pycache__/
 data/
 resources/
 output/
+src/SentEval/
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 src/practical_1_exploration.ipynb
