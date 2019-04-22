@@ -18,7 +18,7 @@ class InferSent(nn.Module):
         :param Embedding embedding: the embedding of the vectors
         :param Encoder encoder: the encoder to use
         """
-        super(InferSent).__init__()
+        super(InferSent, self).__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim
@@ -27,7 +27,7 @@ class InferSent(nn.Module):
 
         self.model = nn.Sequential(
             nn.Linear(self.input_dim, self.hidden_dim),
-            nn.Tanh(),
+            # nn.Tanh(),
             nn.Linear(self.hidden_dim, self.output_dim)
         )
 
