@@ -16,14 +16,14 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 ROOT_DIR = Path.cwd().parent
 
 ENCODER_TYPE_DEFAULT = 'Baseline'
-ENCODERS_PATH_DEFAULT = ROOT_DIR / 'output' / 'models'
+MODELS_PATH_DEFAULT = ROOT_DIR / 'output' / 'models'
 
 
 def infer():
     input_file = Path(FLAGS.input_file[0])
     output_file = input_file.parents / (input_file.name + '.out')
     encoder_type = FLAGS.encoder_type
-    encoders_path = Path(FLAGS.encoders_path)
+    models_path = Path(FLAGS.models_path)
 
     # load the text_field
     print('Loading the data...', end=' ')
@@ -52,8 +52,7 @@ def infer():
     )
     model.to(DEVICE)
 
-    models = list(encoders_path.glob(
-        f'InferSent_{encoder.__class__.__name__}_model.pt'))
+    models = list(models_path.glob(f'InferSent_{encoder.__class__.__name__}_model.pt'))
     if len(models) > 0:
         load_model_state(models[0], model)
     else:
@@ -130,8 +129,8 @@ if __name__ == '__main__':
                         nargs=1, help='Path of the input file')
     parser.add_argument('--encoder_type', type=str, default=ENCODER_TYPE_DEFAULT,
                         help='Encoder type (i.e: Baseline, LSTM, BiLSTM or MaxBiLSTM)')
-    parser.add_argument('--encoders_path', type=str, default=ENCODERS_PATH_DEFAULT,
-                        help='Path of directory where the encoders are stored')
+    parser.add_argument('--models_path', type=str, default=MODELS_PATH_DEFAULT,
+                        help='Path of directory where the models are stored')
 
     FLAGS, unparsed = parser.parse_known_args()
 
