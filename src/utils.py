@@ -40,8 +40,8 @@ def pad_packed_sequence_batch(packed_sequence, batch_lens_sorted, idxs_unsort):
     batch, _ = torch.nn.utils.rnn.pad_packed_sequence(packed_sequence)
 
     # unsort the batch and batch_lens
-    batch = batch[:, idxs_unsort: :]
-    batch_lens = batch_lens_sorted[idxs_unsort, :]
+    batch = batch[:, idxs_unsort, :]
+    batch_lens = batch_lens_sorted[idxs_unsort]
 
     return batch, batch_lens
 
@@ -83,8 +83,10 @@ def print_flags(FLAGS):
 
   :param Namespace FLAGS: the FLAGS Namespace
   """
-  for key, value in FLAGS.items():
-    print(f'{key} : {value}')
+  FLAGS_dict = vars(FLAGS)
+  longest_key_length = max(len(key) for key in FLAGS_dict)
+  for key, value in vars(FLAGS).items():
+    print(f'{key:<{longest_key_length}}: {value}')
 
 
 def print_model_parameters(model):
@@ -96,9 +98,9 @@ def print_model_parameters(model):
     # print(f'Model: {model.__class__.__name__}')
     print('Parameters:')
     named_parameters = model.named_parameters()
-    longest_param_name = max([len(named_param[0]) for named_param in named_parameters])
+    longest_param_name_length = max([len(named_param[0]) for named_param in named_parameters])
     for name, param in named_parameters:
-        print(f' {name:<{longest_param_name}} {param}')
+        print(f' {name:<{longest_param_name_length}}: {param}')
 
 
 def batch_accuracy(batch_y, pred_y):
@@ -152,9 +154,9 @@ def save_model(model_dir, model):
     print('Done!')
 
 
-def save_results(results_dir, results, model):
+def save_training_results(results_dir, results, model):
     """
-    Saves the results
+    Saves the training results
 
     :param pathlib.Path results_dir: the path of the directory to save the results in
     :param dict results: the results
@@ -210,4 +212,20 @@ def load_encoder_state(encoder_path, encoder):
     """
     print('Loading the encoder state...', end=' ')
     encoder.load_state_dict(torch.load(encoder_path))
+    print('Done!')
+
+
+def save_eval_results(results_dir, results, encoder, tasks):
+    """
+    Saves the eval results
+
+    :param pathlib.Path results_dir: the path of the directory to save the results in
+    :param dict results: the results
+    :param nn.Module encoder: the encoder
+    :param list tasks: the list of tasks used for the eval
+    """
+    print('Saving the results...', end=' ')
+    results_df = df.from_dict(results)
+    results_path = results_dir / f'{encoder.__class__.__name__}_{",".join(tasks)}_eval_results.csv'
+    results_df.to_csv(results_path, sep=';', encoding='utf-8')
     print('Done!')
