@@ -44,7 +44,7 @@ python eval.py [OPTIONS]
 
 ### Inference:
 ```
-python src/infer.py INPUT_FILE [OPTIONS]
+python infer.py INPUT_FILE [OPTIONS]
 ```
 #### OPTIONS
 ```
