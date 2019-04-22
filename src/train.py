@@ -56,7 +56,7 @@ def train():
 
     # load the data
     print('Loading the data...', end=' ')
-    train, dev, test, text_field, label_field = load_data(percentage)
+    train, dev, test, text_field, label_field = load_data()
     embedding = nn.Embedding.from_pretrained(text_field.vocab.vectors)
     embedding.requires_grad = False
     print('Done!')
@@ -147,18 +147,18 @@ def train():
 
         # iterate over the train data mini-batches for training
         for batch in train_iter:
-            batch_premises = batch.premise
-            batch_hypotheses = batch.hypothesis
-            batch_y = batch.label
-
-            # forward pass
-            pred_y = model.forward(batch_premises, batch_hypotheses)
-            train_loss = criterion(pred_y, batch_y)
-
-            # (re)set the optimizer gradient to 0
-            optimizer.zero_grad()
-
             try:
+                batch_premises = batch.premise
+                batch_hypotheses = batch.hypothesis
+                batch_y = batch.label
+
+                # forward pass
+                pred_y = model.forward(batch_premises, batch_hypotheses)
+                train_loss = criterion(pred_y, batch_y)
+
+                # (re)set the optimizer gradient to 0
+                optimizer.zero_grad()
+            
                 # backward pass
                 train_loss.backward()
                 optimizer.step()
