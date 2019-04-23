@@ -125,9 +125,6 @@ def train():
         print(f'Starting training at epoch {epoch + 1}...')
     else:
         print(f'Resuming training from epoch {epoch + 1}...')
-    
-    # put the model in train mode
-    model.train()
 
     for i in range(epoch, max_epochs):
         print(f'Epoch {i+1:0{len(str(max_epochs))}}/{max_epochs}:')
@@ -146,6 +143,9 @@ def train():
             device=DEVICE, 
             shuffle=True
         )
+
+        # put the model in train mode
+        model.train()
 
         # iterate over the train data mini-batches for training
         for batch in train_iter:
@@ -182,6 +182,9 @@ def train():
         results['train_accuracy'].append(np.mean(epoch_results['train_accuracy']))
         results['train_loss'].append(np.mean(epoch_results['train_loss']))
         print(f" TRAIN accuracy: {results['train_accuracy'][-1]:0.10f}, loss: {results['train_loss'][-1]:0.10f}")
+
+        # put the model in eval mode
+        model.eval()
 
         # iterate over the dev data mini-batches for evaluation / tuning
         for batch in dev_iter:
@@ -225,6 +228,9 @@ def train():
         'test_accuracy': [],
         'test_loss': []
     }
+
+    # put the model in train mode
+    model.eval()
 
     # iterate over the test data mini-batches for evaluation
     for batch in test_iter:
