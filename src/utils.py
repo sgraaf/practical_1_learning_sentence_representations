@@ -64,7 +64,7 @@ def get_last_hidden_states(batch, batch_lens, output_dim):
     :rtype: torch.tensor
     """
     # get the indices of the last tokens
-    last_tokens = [i * max(batch_lens) + batch_lens[i] for i in range(len(batch_lens))]
+    last_tokens = [i * max(batch_lens) + batch_lens[i] - 1 for i in range(len(batch_lens))]
 
     # get the hidden states of these last tokens
     batch = batch.view(-1, output_dim)
@@ -250,6 +250,7 @@ def plot_training_results(results_dir):
         fig, ax1 = plt.subplots()
         ax1.plot(x, df['dev_accuracy'], color='tab:orange', marker='o', label='Dev accuracy')
         ax1.plot(x, df['train_accuracy'], color='tab:red', marker='o', label='Train accuracy')
+        ax1.axhline(df['test_accuracy'], color='tab:brown')
         ax1.set_xlabel('Epoch')
         ax1.set_ylabel('Accuracy')
         ax1.tick_params('y')
@@ -258,6 +259,7 @@ def plot_training_results(results_dir):
         ax2 = ax1.twinx()
         ax2.plot(x, df['dev_loss'], color='tab:blue', marker='o', label='Dev loss')
         ax2.plot(x, df['train_loss'], color='tab:green', marker='o', label='Train loss')
+        ax2.axhline(df['test_loss'], color='tab:olive')
         ax2.set_ylabel('Loss')
         ax2.tick_params('y')
         # ax2.set_ylim([0, 5])
