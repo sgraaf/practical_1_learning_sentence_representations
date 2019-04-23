@@ -206,7 +206,10 @@ def load_model_state(model_path, model):
     :param nn.Module model: the model
     """
     print('Loading the model state...', end=' ')
-    model.load_state_dict(torch.load(model_path))
+    if next(model.parameters()).is_cuda:
+        model.load_state_dict(torch.load(model_path, map_location=lambda storage, log: storage))
+    else:
+        model.load_state_dict(torch.load(model_path))
     print('Done!')
 
 
