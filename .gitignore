@@ -3,7 +3,8 @@ __pycache__/
 .vscode/
 data/
 resources/
-output/
+output/checkpoints/
+output/models/
 src/SentEval/
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
