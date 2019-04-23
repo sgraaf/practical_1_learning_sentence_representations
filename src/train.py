@@ -229,7 +229,7 @@ def train():
         'test_loss': []
     }
 
-    # put the model in train mode
+    # put the model in eval mode
     model.eval()
 
     # iterate over the test data mini-batches for evaluation
