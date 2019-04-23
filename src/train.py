@@ -115,7 +115,9 @@ def train():
             'train_accuracy': [],
             'train_loss': [],
             'dev_accuracy': [],
-            'dev_loss': []
+            'dev_loss': [],
+            'test_accuracy': None,
+            'test_loss': None
         }
         best_accuracy = 0.0
 
@@ -181,7 +183,7 @@ def train():
         results['train_loss'].append(np.mean(epoch_results['train_loss']))
         print(f" TRAIN accuracy: {results['train_accuracy'][-1]:0.10f}, loss: {results['train_loss'][-1]:0.10f}")
 
-        # iterate over the dev data mini-batches for evaluation
+        # iterate over the dev data mini-batches for evaluation / tuning
         for batch in dev_iter:
             batch_premises = batch.premise
             batch_hypotheses = batch.hypothesis
@@ -218,6 +220,29 @@ def train():
         if learning_rate < MIN_LEARNING_RATE:
             print('Terminating the training process due to learning rate decay')
             break
+
+    test_results = {
+        'test_accuracy': [],
+        'test_loss': []
+    }
+
+    # iterate over the test data mini-batches for evaluation
+    for batch in test_iter:
+        batch_premises = batch.premise
+        batch_hypotheses = batch.hypothesis
+        batch_y = batch.label
+
+        # forward pass
+        pred_y = model.forward(batch_premises, batch_hypotheses)
+        dev_loss = criterion(pred_y, batch_y)
+
+        # compute and record the results
+        test_results['test_accuracy'].append(batch_accuracy(batch_y, pred_y))
+        test_results['test_loss'].append(dev_loss.item())
+
+    results['test_accuracy'] = np.mean(test_results['test_accuracy'])
+    results['test_loss'] = np.mean(test_results['test_loss'])
+    print(f" TEST accuracy: {results['test_accuracy']:0.10f}, loss: {results['test_loss']:0.10f}")
     
     # save the results
     save_training_results(results_path, results, model)
